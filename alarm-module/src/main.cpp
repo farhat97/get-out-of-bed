@@ -1,18 +1,17 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <RTClib.h>
 #include <WiFi.h>
+#include <NTPClient.h>
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1  // No reset pin used
 #define SCREEN_ADDRESS 0x3C // Default I2C address for SSD1306
  
-RTC_DS3231 rtc;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-
 WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP,"pool.ntp.org", -21600, 60000);
 
 void connectToNetwork();
 
@@ -37,7 +36,7 @@ void setup()
   
   // Connect to network
   connectToNetwork();
-  delay(5000);
+  delay(3000);
 
   // Change screen text 
   display.clearDisplay();
@@ -46,25 +45,26 @@ void setup()
   display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
-  display.println(F("Screen test"));
+  display.println("Init Complete");
   display.display();
+
+  timeClient.begin();
 }
 void loop() 
 {
-  // scanForNetworks();
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  timeClient.update();
+  display.println(timeClient.getFormattedTime());
+  display.display();
 
-  // Output some clock or something
-  // DateTime now = rtc.now();
-  // char *timeDisplay = now.hour() + " : " now.minute() + " : " now.second();
- 
-  // display.println(F(timeDisplay));
-  // display.display();
-  // delay(3500);
+  delay(1000);
 }
  
 void connectToNetwork()
 {
 
+  // TODO: get this from a text file
   const char* ssid = "redacted";
   const char* password = "redacted";
 
@@ -83,6 +83,17 @@ void connectToNetwork()
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  // Change screen text 
+  display.clearDisplay();
+ 
+  // Draw simple text
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  String ipString = WiFi.localIP().toString();
+  display.println("Connected! IP: \n" + ipString);
+  display.display();
 }
 
 void scanForNetworks()
