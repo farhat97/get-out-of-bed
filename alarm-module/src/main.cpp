@@ -7,6 +7,8 @@
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1  // No reset pin used
 #define SCREEN_ADDRESS 0x3C // Default I2C address for SSD1306
+
+#define ALARM_TIME "15:00:00"
  
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -14,6 +16,7 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP,"pool.ntp.org", -21600, 60000);
 
 void connectToNetwork();
+void startAlarm();
 
 // Used for debugging purposes
 void scanForNetworks();
@@ -49,6 +52,9 @@ void setup()
   display.display();
 
   timeClient.begin();
+
+  // Output for Buzzer
+  pinMode(20, OUTPUT);
 }
 void loop() 
 {
@@ -58,7 +64,13 @@ void loop()
   display.println(timeClient.getFormattedTime());
   display.display();
 
-  delay(1000);
+  if (timeClient.getFormattedTime().equals(ALARM_TIME)) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Dale broder es hora");
+    display.display();
+    startAlarm();
+  }
 }
  
 void connectToNetwork()
@@ -94,6 +106,21 @@ void connectToNetwork()
   String ipString = WiFi.localIP().toString();
   display.println("Connected! IP: \n" + ipString);
   display.display();
+}
+
+void startAlarm()
+{
+  // TODO: remove testIndex and use external ESP32 to turn alarm off
+  int testIndex = 0;
+  while (testIndex < 7)
+  {
+    tone(20, 2000);
+    delay(200);
+    noTone(20);
+    delay(200);
+    
+    testIndex++;
+  }
 }
 
 void scanForNetworks()
