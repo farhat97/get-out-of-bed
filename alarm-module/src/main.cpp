@@ -30,6 +30,9 @@ void setup()
   // Initialize Screen
   Wire.begin(8, 9);  // SDA = GPIO8, SCL = GPIO9
 
+  Serial.print("ESP32 MAC Address: ");
+  Serial.println(WiFi.macAddress());
+
   // Start display
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
   {
