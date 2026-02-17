@@ -3,6 +3,8 @@
 #include <Adafruit_SSD1306.h>
 #include <WiFi.h>
 #include <NTPClient.h>
+#include <esp_now.h>
+#include <esp_wifi.h>
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1  // No reset pin used
@@ -13,7 +15,25 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP,"pool.ntp.org", -21600, 60000);
+NTPClient timeClient(ntpUDP,"pool.ntp.org", -21600, (24 * 60 * 60 * 1000));
+
+typedef struct struct_message 
+{
+  char action[32];
+  int value;
+} struct_message;
+
+struct_message incomingData;
+
+void onDataRecv(const uint8_t * mac, const uint8_t *incomingBytes, int len) 
+{
+  memcpy(&incomingData, incomingBytes, sizeof(incomingData));
+  Serial.print("Action received: ");
+  Serial.print("Value: ");
+  Serial.println(incomingData.value);
+  
+  // TODO: set flag to turn alarm off
+}
 
 void connectToNetwork();
 void startAlarm();
@@ -30,8 +50,25 @@ void setup()
   // Initialize Screen
   Wire.begin(8, 9);  // SDA = GPIO8, SCL = GPIO9
 
+  WiFi.mode(WIFI_STA);
+
   Serial.print("ESP32 MAC Address: ");
   Serial.println(WiFi.macAddress());
+
+  // ESPNow
+  // Initialize ESP-NOW
+  if (esp_now_init() != ESP_OK) 
+  {
+    Serial.println("ESP-NOW init failed");
+    while(1) delay(1000);
+  }
+  Serial.println("ESP-NOW initialized");
+  if (esp_now_register_recv_cb(onDataRecv) != ESP_OK)
+  {
+    Serial.println("Failed to register send callback");
+    while(1) delay(1000);
+  }
+  Serial.println("Receive callback registered");
 
   // Start display
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
@@ -83,10 +120,15 @@ void connectToNetwork()
   const char* ssid = "redacted";
   const char* password = "redacted";
 
-  WiFi.mode(WIFI_STA);
-  
   Serial.println(F("Starting network connection"));
   WiFi.begin(ssid, password);
+
+  // Log the channel
+  uint8_t channel;
+  wifi_second_chan_t secondChan;
+  esp_wifi_get_channel(&channel, &secondChan);
+  Serial.print("WiFi Channel: ");
+  Serial.println(channel);
 
   while (WiFi.status() != WL_CONNECTED)
   {
