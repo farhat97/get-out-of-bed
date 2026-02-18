@@ -10,12 +10,14 @@
 #define OLED_RESET    -1  // No reset pin used
 #define SCREEN_ADDRESS 0x3C // Default I2C address for SSD1306
 
-#define ALARM_TIME "15:00:00"
+#define ALARM_TIME "06:30:00"
  
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP,"pool.ntp.org", -21600, (24 * 60 * 60 * 1000));
+
+boolean ALARM_FLAG = false;
 
 typedef struct struct_message 
 {
@@ -32,11 +34,11 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incomingBytes, int len)
   Serial.print("Value: ");
   Serial.println(incomingData.value);
   
-  // TODO: set flag to turn alarm off
+  ALARM_FLAG = true;
 }
 
 void connectToNetwork();
-void startAlarm();
+void startAlarm(boolean* alarmFlag);
 
 // Used for debugging purposes
 void scanForNetworks();
@@ -96,6 +98,7 @@ void setup()
   // Output for Buzzer
   pinMode(20, OUTPUT);
 }
+
 void loop() 
 {
   display.clearDisplay();
@@ -109,7 +112,7 @@ void loop()
     display.setCursor(0, 0);
     display.println("Dale broder es hora");
     display.display();
-    startAlarm();
+    startAlarm(&ALARM_FLAG);
   }
 }
  
@@ -153,19 +156,18 @@ void connectToNetwork()
   display.display();
 }
 
-void startAlarm()
+void startAlarm(boolean* flag)
 {
-  // TODO: remove testIndex and use external ESP32 to turn alarm off
-  int testIndex = 0;
-  while (testIndex < 7)
+  while (!*flag)
   {
     tone(20, 2000);
     delay(200);
     noTone(20);
     delay(200);
-    
-    testIndex++;
   }
+
+  // Reset flag
+  *flag = false;
 }
 
 void scanForNetworks()
