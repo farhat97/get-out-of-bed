@@ -107,7 +107,8 @@ void loop()
   display.println(timeClient.getFormattedTime());
   display.display();
 
-  if (timeClient.getFormattedTime().equals(ALARM_TIME)) {
+  if (timeClient.getFormattedTime().equals(ALARM_TIME))
+  {
     display.clearDisplay();
     display.setCursor(0, 0);
     display.println("Dale broder es hora");
@@ -160,7 +161,7 @@ void startAlarm(boolean* flag)
 {
   while (!*flag)
   {
-    tone(20, 2000);
+    tone(20, 1000);
     delay(200);
     noTone(20);
     delay(200);
@@ -177,9 +178,11 @@ void scanForNetworks()
   // WiFi.scanNetworks will return the number of networks found
   int n = WiFi.scanNetworks();
   Serial.println("scan done");
-  if (n == 0) {
-      Serial.println("no networks found");
-  } else {
+  if (n == 0) 
+  {
+    Serial.println("no networks found");
+  } else 
+  {
     Serial.print(n);
     Serial.println(" networks found");
     for (int i = 0; i < n; ++i) {
