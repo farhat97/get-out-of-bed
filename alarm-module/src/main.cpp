@@ -153,7 +153,9 @@ void connectToNetwork()
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
   String ipString = WiFi.localIP().toString();
-  display.println("Connected! IP: \n" + ipString);
+  display.println("Connected-"+ ipString);
+  String chanStr = String(channel);
+  display.println("\nChan: "+ chanStr);
   display.display();
 }
 
