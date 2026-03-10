@@ -49,12 +49,12 @@ void setup()
   }
   Serial.println("Callback registered");
 
-  esp_wifi_set_channel(11, WIFI_SECOND_CHAN_NONE);
+  esp_wifi_set_channel(6, WIFI_SECOND_CHAN_NONE);
 
   // Add peer
   esp_now_peer_info_t peerInfo = {};
-  memcpy(peerInfo.peer_addr, receiverAddress, 11);
-  peerInfo.channel = 11;
+  memcpy(peerInfo.peer_addr, receiverAddress, 6);
+  peerInfo.channel = 6;
   peerInfo.encrypt = false;
   peerInfo.ifidx = WIFI_IF_STA;
   

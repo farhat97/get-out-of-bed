@@ -15,7 +15,7 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP,"pool.ntp.org", -21600, (24 * 60 * 60 * 1000));
+NTPClient timeClient(ntpUDP,"pool.ntp.org", -18000, (24 * 60 * 60 * 1000));
 
 boolean ALARM_FLAG = false;
 
